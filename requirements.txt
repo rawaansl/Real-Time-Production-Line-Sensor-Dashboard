@@ -1,0 +1,6 @@
+PyQt6==6.10.1
+pyqtgraph==0.14.0
+websockets==15.0.1
+plyer>=2.1.0
+numpy==2.4.0
+colorama==0.4.6
