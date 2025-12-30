@@ -23,7 +23,7 @@ class Dashboard(QMainWindow):
         self.setWindowTitle("Real-Time Production Line Sensor Dashboard")
         self.resize(1600, 950)
         
-        self.setWindowIcon(QIcon("icon.png"))
+        self.setWindowIcon(QIcon("imgs/icon.png"))
         
         self.start_time = time.time()
         self.maintenance_unlocked = False 
@@ -744,7 +744,7 @@ if __name__ == "__main__":
     canvas.fill(QColor("#1C1C1E")) # Matches your Dashboard's dark grey
 
     # 2. Load and draw your logo onto that canvas
-    logo_pix = QPixmap("logo.png")
+    logo_pix = QPixmap("imgs/logo.png")
     if not logo_pix.isNull():
         logo_pix = logo_pix.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         

@@ -839,7 +839,7 @@ except json.JSONDecodeError:
 
 
 ##### 8.2 Responsive Design 
-![Monitoring UI](monitoring_ui.png)
+![Monitoring UI](imgs/monitoring_ui.png)
 
 
 
