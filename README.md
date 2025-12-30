@@ -101,9 +101,9 @@ python app.py
 - Load offline logs
 - Enable desktop notifications
 
-## 📡 Communication Protocol Description
+##  Communication Protocol Description
 
-### 🔌 Transport Layer
+### Transport Layer
 
 - **Protocol:** TCP Socket
 - **Host:** 127.0.0.1
