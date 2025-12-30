@@ -10,6 +10,7 @@ Real-Time-Production-Line-Sensor-Dashboard/
 ├── app.py                 # Main PyQt6 dashboard application
 ├── sensor_worker.py       # Worker threads (Live TCP + Offline Replay)
 ├── simulator.py           # TCP / WebSocket sensor data simulator
+├── test_logic.py          # Basic unit tests
 ├── sensors_config.json    # Sensor definitions and connection config
 ├── requirements.txt       # Python dependencies
 ├── README.md              # Project documentation
