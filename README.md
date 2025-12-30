@@ -444,6 +444,7 @@ def restart_simulation(self) -> None
 6. Resets notification preference
 7. Resets global status indicator
 8. Clears session archive
+9. Locks maintenance tab
 9. Re-establishes connection if was connected
 
 **Thread Safety**: Uses `worker.wait()` before reinitializing.

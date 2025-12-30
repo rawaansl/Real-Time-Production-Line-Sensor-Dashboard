@@ -318,7 +318,7 @@ class Dashboard(QMainWindow):
 
         # Log Header with Title and Clear Button on the same line
         log_header = QHBoxLayout()
-        log_title = QLabel("LIVE SYSTEM LOGS")
+        log_title = QLabel("LIVE LOG VIEWER")
         log_title.setStyleSheet("color: #8E8E93; font-weight: 800; font-size: 11px; letter-spacing: 1px;")
         
         self.btn_clear_logs = QPushButton("CLEAR LOGS")
@@ -428,7 +428,14 @@ class Dashboard(QMainWindow):
         # Reset global status indicator
         grey_circle_style = "background-color: #8E8E93; border-radius: 10px; min-width: 20px; max-width: 20px; min-height: 20px; max-height: 20px;"
         self.global_status_circle.setStyleSheet(grey_circle_style)
+        
         self.global_status_text.setText("SYSTEM OFFLINE")
+        self.btn_toggle.setText("Connect System")
+        self.status_led.setText("●  SYSTEM DISCONNECTED")
+        self.status_led.setStyleSheet("color: #FF453A;")
+        
+        self.session_timer.stop()  # Stop any existing timers
+        self.maintenance_unlocked = False  # Lock maintenance session
         
         
         # 5. Toggle the connect button to trigger a fresh start
@@ -437,6 +444,9 @@ class Dashboard(QMainWindow):
             self.handle_connection() # This will restart it if checked
             
         self.session_archive = []  # Clear the session archive buffer
+    
+  
+        
         self.update_log("SYSTEM: Simulator re-initialized successfully.")
         
 
@@ -477,6 +487,8 @@ class Dashboard(QMainWindow):
             self.btn_toggle.setText("Disconnect System")
             self.status_led.setText("●  SYSTEM CONNECTED")
             self.status_led.setStyleSheet("color: #32D74B;") 
+            
+            
         else:
             if hasattr(self, 'worker'): self.worker.stop()
             self.btn_toggle.setText("Connect System")
