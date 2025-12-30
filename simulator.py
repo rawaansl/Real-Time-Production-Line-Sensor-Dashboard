@@ -18,6 +18,7 @@ def load_config():
         sys.exit(1)
 
 def generate_payload(sensor_settings):
+    
     """Helper to generate sensor data based on config ranges."""
     payload = []
     for name, limits in sensor_settings.items():

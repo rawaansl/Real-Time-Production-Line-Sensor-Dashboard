@@ -7,6 +7,7 @@ import simulator
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
+
 class SensorWorker(QThread):
     
     # Signals maintaining thread safety with the main GUI thread
@@ -161,6 +162,10 @@ class OfflineReplayWorker(QThread):
             self.log_message.emit("OFFLINE: Replay finished.")
         except Exception as e:
             self.log_message.emit(f"OFFLINE ERROR: {str(e)}")
+            
+            
+            
+            
 
     def stop(self):
         self._run_flag = False
