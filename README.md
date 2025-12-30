@@ -2,7 +2,7 @@
 
 A desktop-based real-time monitoring dashboard built with PyQt6 that visualizes industrial sensor data streamed over TCP. The system supports live monitoring, alarm detection, offline replay, and session export with a modern, production-grade UI.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Real-Time-Production-Line-Sensor-Dashboard/
@@ -18,7 +18,7 @@ Real-Time-Production-Line-Sensor-Dashboard/
 └── venv/                  # (Optional) Virtual environment
 ```
 
-## ⚙️ Setup Steps
+## Setup Steps
 
 ### 1. Prerequisites
 
@@ -54,7 +54,7 @@ pip install -r requirements.txt
 - plyer
 - websockets (optional – WebSocket simulator)
 
-## ▶️ Running Instructions
+## Running Instructions
 
 ### Step 1: Start the Sensor Simulator
 
@@ -110,7 +110,7 @@ python app.py
 - **Port:** 5555
 - **Update Rate:** Configurable (default: 0.5s)
 
-### 📦 Data Format (TCP Payload)
+### Data Format (TCP Payload)
 
 Each TCP message is:
 - JSON-encoded
@@ -135,7 +135,7 @@ Each TCP message is:
 ]
 ```
 
-### 🧾 Sensor Object Fields
+### Sensor Object Fields
 
 | Field     | Type   | Description               |
 |-----------|--------|---------------------------|
@@ -144,7 +144,7 @@ Each TCP message is:
 | timestamp | string | Time in HH:MM:SS          |
 | status    | string | OK, LOW ALARM, HIGH ALARM |
 
-### ⚠️ Alarm Logic
+### Alarm Logic
 
 - `value < low` → **LOW ALARM**
 - `value > high` → **HIGH ALARM**
@@ -154,7 +154,7 @@ Each TCP message is:
 - Alarm log entry
 - Optional desktop notification
 
-## 🗂 Sensor Configuration (sensors_config.json)
+## Sensor Configuration (sensors_config.json)
 
 ```json
 {
@@ -174,7 +174,7 @@ Each TCP message is:
 }
 ```
 
-## 💾 Offline Replay & Export
+## Offline Replay & Export
 
 ### Export Current Session
 
@@ -188,7 +188,7 @@ Each TCP message is:
 - Replay data using the same UI pipeline
 - System switches to **REPLAY MODE**
 
-## 🛠 Optional WebSocket Support
+## Optional WebSocket Support
 
 The simulator includes a WebSocket server:
 ```
@@ -199,7 +199,7 @@ ws://localhost:8080
 1. Uncomment WebSocket section in `simulator.py`
 2. Implement WebSocket worker in `sensor_worker.py`
 
-## ✅ Key Features Summary
+## Key Features Summary
 
 - ✓ Real-time sensor monitoring
 - ✓ Industrial TCP simulation
