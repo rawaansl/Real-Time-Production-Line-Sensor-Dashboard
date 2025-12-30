@@ -12,11 +12,11 @@ class SensorWorker(QThread):
     # Signals maintaining thread safety with the main GUI thread
     data_received = pyqtSignal(list)
     alarm_triggered = pyqtSignal(dict)
-    log_message = pyqtSignal(str)
+    log_message = pyqtSignal(str)  
     
     def __init__(self):
         super().__init__()
-        self._run_flag = True # Flag to control the while loop
+        self._run_flag = True
         self.client = None
 
     def run(self):
@@ -24,28 +24,18 @@ class SensorWorker(QThread):
         host = simulator.load_config()['connection']['host']
         port = simulator.load_config()['connection']['tcp_port']
         
-        self.log_message.emit("Attempting to connect to simulator...")  # Log connection attempt 
-        # updated in UI through signal-slot mechanism --> log_message signal and update_log slot
+        self.log_message.emit("Attempting to connect to simulator...")
         
         try:
-            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # Create TCP socket client 
-            
-            # Set a timeout so recv() doesn't block forever when we try to stop
-            # set a timeout so connection doesn't hang indefinitely
+            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client.settimeout(5.0) 
-            
-            # Connect to the simulator server on the specified host and port
-            self.client.connect((host, port))   # Connect to simulator server 
-            # connect method blocks until connection is established or fails like accept method in the server side 
-            
-            
+            self.client.connect((host, port))
+
             self.log_message.emit("Connected to simulator successfully.") 
-            
             
             while self._run_flag:
                 try:
-                    # Wait for data from the simulator
-                    raw_data = self.client.recv(4096).decode('utf-8')    # Blocking call with timeout 
+                    raw_data = self.client.recv(4096).decode('utf-8')
                     
                     if not raw_data:
                         self.log_message.emit("Connection closed by simulator.")
@@ -58,7 +48,6 @@ class SensorWorker(QThread):
                             self.data_received.emit(sensor_list)
                             
                 except socket.timeout:
-                    # Timeout is normal, it just lets us check if _run_flag is still True
                     self.log_message.emit("Stream Heartbeat: No data received, continuing to listen...")
                     continue
                 except Exception as e:
@@ -81,7 +70,6 @@ class SensorWorker(QThread):
         self._run_flag = False
 
 
-
 class WebSocketWorker(QThread):
     data_received = pyqtSignal(list)
     log_message = pyqtSignal(str)
@@ -95,7 +83,6 @@ class WebSocketWorker(QThread):
         self._run_flag = False
 
     def run(self):
-        # We must create a new event loop for this specific thread
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(self.listen())
@@ -108,14 +95,8 @@ class WebSocketWorker(QThread):
                 
                 while self._run_flag:
                     try:
-                        # This line blocks until a full message arrives
-                        # No need to specify 4096; it handles any size automatically
                         message = await asyncio.wait_for(websocket.recv(), timeout=5.0)
-                        
-                        # WebSockets usually send JSON strings
                         data = json.loads(message)
-                        
-                        # Throw the data to the Main UI Thread
                         self.data_received.emit(data)
                         
                     except asyncio.TimeoutError:
@@ -129,14 +110,11 @@ class WebSocketWorker(QThread):
         self.log_message.emit("WebSocket Disconnected.")
 
 
-# offline data parser and replayer
-# imports json and time already done above
 class OfflineReplayWorker(QThread):
     data_received = pyqtSignal(list)
     alarm_triggered = pyqtSignal(dict)
     log_message = pyqtSignal(str)
     
-
     def __init__(self, file_path):
         super().__init__()
         self.file_path = file_path
@@ -150,12 +128,10 @@ class OfflineReplayWorker(QThread):
             self.log_message.emit(f"OFFLINE: Loaded {len(saved_data)} data points.")
             
             for entry in saved_data:
-                if not self._run_flag: break
+                if not self._run_flag: 
+                    break
                 
-                # Emit the data just like the live sensor would
                 self.data_received.emit(entry['sensors'])
-                
-                # Sleep to simulate required frequency 2Hz
                 time.sleep(0.5) 
                 
             self.log_message.emit("OFFLINE: Replay finished.")
