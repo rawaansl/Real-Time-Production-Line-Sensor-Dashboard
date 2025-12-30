@@ -574,11 +574,11 @@ class Dashboard(QMainWindow):
         self.log_display.append(f"<b>{time.strftime('%H:%M:%S')}</b> > {msg}")
 
 
-
+        # OVERRIDE EVENT FILTER TO RESET TIMER ON USER ACTIVITY
     def eventFilter(self, obj, event):
         if event.type() in [event.Type.MouseMove, event.Type.MouseButtonPress, event.Type.KeyPress]:
             if self.maintenance_unlocked: self.session_timer.start(self.timeout_seconds * 1000)
-        return super().eventFilter(obj, event)
+        return super().eventFilter(obj, event)   # Pass the event to the base class for normal processing 
 
 
 

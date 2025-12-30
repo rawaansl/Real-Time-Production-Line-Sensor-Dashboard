@@ -213,7 +213,6 @@ ws://localhost:8080
 - ✓ Offline replay
 - ✓ Session export
 - ✓ Admin-protected maintenance console
-- ✓ Modern dark UI (production-grade)
 
 # API Documentation 
 
@@ -292,12 +291,12 @@ def setup_monitoring_ui(self) -> None
    - Connection status LED indicator
    - Connect/Disconnect toggle button to connect and disconnect from simulator 
 
-2. **Live Sensors Table** (60% width)
+2. **Live Sensors Table** 
    - 4 columns: Sensor, Reading, Time, Status
    - Auto-stretch columns
    - Read-only cells
 
-3. **Alarm Logs Table** (40% width)
+3. **Alarm Logs Table** 
    - 4 columns: Time, Sensor, Val, Type
    - Chronological alarm history
 
@@ -410,7 +409,7 @@ def add_to_alarm_history(self, ts: str, name: str, val: float, status: str) -> N
 | `val` | float | Sensor reading at alarm time |
 | `status` | str | Alarm type (LOW ALARM/HIGH ALARM) |
 
-**Behavior**: Inserts new row at top of alarm table with center-aligned text.
+**Behavior**: Inserts new row at top of alarm table.
 
 ---
 
@@ -460,7 +459,7 @@ def load_offline_data(self) -> None
 
 **Process**:
 1. Stops live worker if running
-2. Resets UI to clean state
+2. Resets UI to clean statemask
 3. Opens file dialog (JSON/CSV support)
 4. Switches status to "REPLAY MODE" 
 5. Creates `OfflineReplayWorker` instance
@@ -548,7 +547,7 @@ def check_tab_access(self, index: int) -> None
 **Authentication Flow**:
 1. User clicks "Maintenance Console" tab
 2. If not unlocked, blocks navigation
-3. Shows password dialog (masked input)
+3. Shows password dialog 
 4. Validates token: `"admin123"`
 5. On success:
    - Sets `maintenance_unlocked = True`
@@ -678,7 +677,7 @@ session_timer.timeout.connect(self.lock_maintenance_session)
     "name": str,        # Sensor identifier
     "value": float,     # Current reading
     "timestamp": str,   # HH:MM:SS format
-    "status": str       # "OK" | "LOW ALARM" | "HIGH ALARM"
+    "status": str       # "OK" | "FAULT"
 }
 ```
 
