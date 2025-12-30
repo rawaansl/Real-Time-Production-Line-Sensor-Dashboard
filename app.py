@@ -46,8 +46,12 @@ class Dashboard(QMainWindow):
         
         self.active_alarms = set()
         
+        
         # Buffer to store the current session for export
         self.session_archive = []
+        
+        # Dictionary to track last alert times for rate limiting
+        self.last_alert_time = {}
         
         self.init_ui()
 
@@ -565,21 +569,36 @@ class Dashboard(QMainWindow):
             
             
             
+            
 
     def trigger_desktop_alert(self, name, val, status):
-        # Check if the user has allowed notifications
         if not self.notif_checkbox.isChecked():
             return 
+
+        current_time = time.time()
+        cooldown_period = 60  # 1 minute between notifications for the SAME sensor
         
+    # Check if we have sent an alert for this specific sensor recently
+        last_sent = self.last_alert_time.get(name, 0)
+    
+        if current_time - last_sent < cooldown_period:
+        # It's too soon! Log it internally, but don't spam the OS
+            return 
+
         try:
             notification.notify(
                 title=f"⚠️ {status}",
                 message=f"{name} is at {val:.2f}",
-                app_name="Real-Time Production Line Sensor Dashboard",
+                app_name="Sensor Dashboard",
                 timeout=2
             )
+            # Update the timestamp so we don't alert again for 60s
+            self.last_alert_time[name] = current_time
+        
         except Exception as e:
             print(f"Notification failed: {e}")
+            
+            
             
 
     def update_log(self, msg):
@@ -687,6 +706,20 @@ class Dashboard(QMainWindow):
                 QMessageBox.information(self, "Export Complete", f"Successfully saved to {file_path}")
             except Exception as e:
                 self.update_log(f"EXPORT ERROR: {str(e)}")       
+        
+        
+    def closeEvent(self, event):
+        print("Shutting down system...")
+
+        # 1. Stop the Sensor Worker
+        if hasattr(self, 'worker') and self.worker.isRunning():
+            self.worker.stop()
+            self.worker.wait() # Wait for the thread to fully exit memory
+            
+
+        # 3. Accept the close event to actually close the window
+        event.accept()
+            
             
             
 if __name__ == "__main__":
