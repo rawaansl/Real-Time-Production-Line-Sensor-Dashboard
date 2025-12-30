@@ -96,7 +96,22 @@ class TestSensorDashboard(unittest.TestCase):
         self.assertEqual(parsed_data[0]['name'], "Temp")
         self.assertIsInstance(parsed_data[0]['value'], float)
 
-
+# --- 5. API OUTPUT TESTS ---
+    def test_api_output_compliance(self):
+    
+        # 1. Setup sample config
+        config = {"Temp": {"low": 20, "high": 30}, "Press": {"low": 50, "high": 100}}
+        
+        # 2. Generate the "API Output"
+        payload = simulator.generate_payload(config)
+        api_string = json.dumps(payload) + "\n"
+        
+        # 3. Assertions (The "Tests")
+        self.assertTrue(api_string.endswith("\n"), "API Output must use newline termination.")
+        
+        decoded_payload = json.loads(api_string.strip())
+        self.assertEqual(len(decoded_payload), 2, "API Output count must match config count.")
+        self.assertEqual(decoded_payload[0]['name'], "Temp")
 
 
 if __name__ == '__main__':
