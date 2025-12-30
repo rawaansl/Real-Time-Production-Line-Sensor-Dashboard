@@ -68,7 +68,19 @@ class Dashboard(QMainWindow):
                 border-radius: 12px; font-weight: 600; font-family: 'Segoe UI', sans-serif;
             }
             QTabBar::tab:selected { background: #3A3A3C; color: #FFFFFF; }
+            
+            /* 2. ADD THIS: The Hover State */
+            QTabBar::tab:hover:!selected {
+                background: #3A3A3C; /* A slightly lighter dark grey than the background */
+                color: #FFFFFF;      /* Make text white on hover for better contrast */
+}
 
+            /* 3. The Selected State (Already in your code) */
+            QTabBar::tab:selected { 
+                background: #48484A; /* Even lighter or distinct grey for the active tab */
+                color: #FFFFFF; 
+            }
+            
             /* Modern GroupBox as 'Cards' */
             QGroupBox { 
                 color: #FFFFFF; font-weight: 600; border: 1px solid #3A3A3C; 
@@ -104,7 +116,7 @@ class Dashboard(QMainWindow):
 
             /* 2. Hover while Green: Lighter Green */
             QPushButton#connectBtn:hover { 
-                background-color: #33FF33; 
+                background-color: #28B33F; 
             }
 
             /* 3. Checked State (System Connected): Red with White Text */
@@ -152,6 +164,8 @@ class Dashboard(QMainWindow):
         self.monitoring_tab = QWidget()
         self.setup_monitoring_ui()
         self.tabs.addTab(self.monitoring_tab, "Monitoring Dashboard")
+        
+        
         
         self.maintenance_tab = QWidget()
         self.setup_maintenance_ui()
@@ -577,7 +591,6 @@ class Dashboard(QMainWindow):
 
         current_time = time.time()
         cooldown_period = 60  # 1 minute between notifications for the SAME sensor
-        
     # Check if we have sent an alert for this specific sensor recently
         last_sent = self.last_alert_time.get(name, 0)
     
@@ -597,9 +610,6 @@ class Dashboard(QMainWindow):
         
         except Exception as e:
             print(f"Notification failed: {e}")
-            
-            
-            
 
     def update_log(self, msg):
         self.log_display.append(f"<b>{time.strftime('%H:%M:%S')}</b> > {msg}")
@@ -628,6 +638,8 @@ class Dashboard(QMainWindow):
                 self.maintenance_unlocked = True
                 self.session_timer.start(self.timeout_seconds * 1000)
                 self.tabs.setCurrentIndex(1)
+            else:
+                QMessageBox.warning(self, "Access Denied", "Invalid token. Access to Maintenance Console is restricted.")
                 
     def global_status_update(self, operational):
         if operational:
