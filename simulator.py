@@ -86,45 +86,34 @@ def run_tcp_simulator():
 
 
 def run_websocket_simulator():
+    
+    config = load_config()
+    SENSOR_CONFIG = config['sensors']
+    interval = config['connection']['update_interval']
+
+    
     # The 'Handler' function called for every new connection
     async def sensor_data(websocket):
-        SENSOR_CONFIG = load_config()['sensors']
-        
         print(f"Dashboard Connected: {websocket.remote_address}")
-        
         try:
             while True:
-                payload = []
-                for name, limits in SENSOR_CONFIG.items():
-                    # Generate value with occasional out-of-bounds for alarms
-                    val = round(random.uniform(limits['low'] - 5, limits['high'] + 5), 2)
-                    
-                    if val < limits['low']:
-                        status = "LOW ALARM"
-                    elif val > limits['high']:
-                        status = "HIGH ALARM"
-                    else:
-                        status = "OK"
-                    
-                    payload.append({
-                        "name": name,
-                        "value": val,
-                        "timestamp": time.strftime("%H:%M:%S"),
-                        "status": status
-                    })
+                payload = generate_payload(SENSOR_CONFIG)
+                json_data = json.dumps(payload)  # no manual delimiter needed for WebSocket
+                await websocket.send(json_data)
+                await asyncio.sleep(interval) # 2Hz Update Frequency
                 
-                # Push the data through the pipe
-                await websocket.send(json.dumps(payload))
-                await asyncio.sleep(0.5) # 2Hz Update Frequency
-                
+                                
         except websockets.exceptions.ConnectionClosed:
             print(f"Dashboard Disconnected: {websocket.remote_address}")
+            
 
     async def main():
         # Using 'async with' ensures the server stops cleanly
-        async with websockets.serve(sensor_data, "localhost", 8080):
-            print("Industrial WebSocket Simulator Online at ws://localhost:8080")
+        async with websockets.serve(sensor_data, "localhost", config['connection']['ws_port']):
+            print("Industrial WebSocket Simulator Online at ws://localhost:8080...")
             await asyncio.Future()  # Run forever
+            
+            
 
     try:
         asyncio.run(main())
@@ -136,13 +125,13 @@ if __name__ == "__main__":
     # You can choose which one to run by uncommenting:
     
     # OPTION A: Run TCP (Default for the current dashboard)
-    try:
-        run_tcp_simulator()
-    except KeyboardInterrupt:
-        print("\nTCP Simulator shut down.")
+    # try:
+    #     run_tcp_simulator()
+    # except KeyboardInterrupt:
+    #     print("\nTCP Simulator shut down.")
 
     # OPTION B: Run WebSocket (NOTE ---> update your dashboard worker WebSocketWorker accordingly)
-    # try:
-    #     asyncio.run(run_websocket_simulator())
-    # except KeyboardInterrupt:
-    #     print("\nWS Simulator shut down.")
+    try:
+        asyncio.run(run_websocket_simulator())
+    except KeyboardInterrupt:
+        print("\nWS Simulator shut down.")
