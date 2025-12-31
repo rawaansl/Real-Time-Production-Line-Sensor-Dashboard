@@ -891,6 +891,22 @@ Client                          Server
 ### 7.2 WebSocket Alternative
 
 Section 3.2.2 WebSocket Protocol
+**To check websocket data stream:**
+1. Run simulator script
+```bash
+python simulator.py
+```
+2. Open Google Chrome or Edge
+3. Right click then select `Inspect`, go to `Console` tab:
+```Javascript
+const socket = new WebSocket('ws://localhost:8080');
+socket.onmessage = (event) => console.log('Data:', event.data);
+socket.onerror = (error) => console.error('Error:', error);
+```
+**Expected:** JSON objects scrolling in the console
+![](imgs/online_simulator.png)
+
+
 
 
 
