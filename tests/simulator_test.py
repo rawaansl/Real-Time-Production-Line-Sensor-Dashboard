@@ -15,6 +15,7 @@ from unittest.mock import patch, mock_open
 
 
 
+
 class TestSimulator(unittest.TestCase):
     
     
@@ -43,10 +44,8 @@ class TestSimulator(unittest.TestCase):
         mock_file.assert_called_with('config/sensors_config.json', 'r')
         
         
-        
-        
-        
-        
+
+
     # --- 2. PAYLOAD GENERATION TESTS ---
     def test_payload_structure(self):
         """Verify generated payload format"""
