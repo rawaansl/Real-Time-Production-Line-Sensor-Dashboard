@@ -635,9 +635,12 @@ class Dashboard(QMainWindow):
             self.tabs.blockSignals(True); self.tabs.setCurrentIndex(0); self.tabs.blockSignals(False)
             token, ok = QInputDialog.getText(self, "Identity Verification", "Enter Admin Token:", echo=QLineEdit.EchoMode.Password)
             if ok and token == "admin123":
+
+                QMessageBox.information(self, "Access Granted", "Welcome, Administrator. Maintenance Console Unlocked for 10 minutes.")
                 self.maintenance_unlocked = True
                 self.session_timer.start(self.timeout_seconds * 1000)
                 self.tabs.setCurrentIndex(1)
+                
             else:
                 QMessageBox.warning(self, "Access Denied", "Invalid token. Access to Maintenance Console is restricted.")
                 
