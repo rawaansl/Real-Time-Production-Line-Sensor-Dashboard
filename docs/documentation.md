@@ -60,12 +60,8 @@
     - 10.4 [Maintenance Access Control](#104-maintenance-access-control)
 11. [Testing Strategy](#11-testing-strategy)
     - 11.1 [Unit Testing](#111-unit-testing)
-12. [Deployment & Usage](#12-deployment--usage)
-    - 12.1 [Installation Guide](#131-installation-guide)
-    - 12.2 [Configuration](#132-configuration)
-    - 12.3 [Running the Application](#133-running-the-application)
-13. [Conclusion](#13-conclusion)
-14. [Appendices](#14-appendices)
+12. [Conclusion](#12-conclusion)
+13. [Appendices](#13-appendices)
 
 ---
 
@@ -1600,14 +1596,7 @@ class TestSensorWorker(unittest.TestCase):
 
 ```
 
-#### 13. Deployment and Usage
-
-###### 12.1.2 Dependency Installation
-
-**Step 1: Clone Repository**
-```bash
-git clone https://github.com/yourusername/sensor-dashboard.git
-cd sensor-dashboard
+#### 12. Conclusion
 
 
 
