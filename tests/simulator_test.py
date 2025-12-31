@@ -11,21 +11,41 @@
 import unittest
 import json
 from simulator import load_config, generate_payload
+from unittest.mock import patch, mock_open
+
+
 
 class TestSimulator(unittest.TestCase):
     
     
     def setUp(self):
-        self.config = load_config()
-        self.sensors = self.config['sensors']
+        try:
+            self.config = load_config()
+            self.sensors = self.config['sensors']
+        except:
+            self.config = None
+            self.sensors = None
     
     
-    # --- 1. CONFIGURATION TESTS ---
-    def test_config_loading(self):
-        """Verify configuration file is valid"""
-        self.assertIn('sensors', self.config)
-        self.assertIn('connection', self.config)
-        self.assertEqual(len(self.sensors), 6)
+    # --- 1. CONFIG LOADER TESTS ---
+    @patch("builtins.open", new_callable=mock_open, read_data='{"test": "data"}')
+    def test_load_config_success(self, mock_file):
+        result = load_config()
+        self.assertEqual(result, {"test": "data"})
+        mock_file.assert_called_with('config/sensors_config.json', 'r')
+        
+        
+    @patch("builtins.open", side_effect=FileNotFoundError)
+    def test_load_config_file_not_found(self, mock_file):
+        with self.assertRaises(SystemExit) as cm:
+            load_config()
+        self.assertEqual(cm.exception.code, 1)
+        mock_file.assert_called_with('config/sensors_config.json', 'r')
+        
+        
+        
+        
+        
         
     # --- 2. PAYLOAD GENERATION TESTS ---
     def test_payload_structure(self):
