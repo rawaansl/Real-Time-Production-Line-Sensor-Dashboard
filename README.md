@@ -235,6 +235,18 @@ self.worker = SensorWorker()       # TCP sensor Socket Worker initiation if conn
 # self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
 ```
 
+
+
+###### Verification
+
+```bash
+# Test simulator
+python -m unittest .\tests\simulator_test.py
+
+# Test sensor worker
+python -m unittest .\tests\worker_test.py
+
+```
 #### Key Features Summary
 
 - Real-time sensor monitoring
