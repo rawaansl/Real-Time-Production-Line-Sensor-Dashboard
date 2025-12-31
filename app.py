@@ -12,7 +12,7 @@ from PyQt6.QtGui import QColor, QFont, QPixmap, QIcon
 from PyQt6.QtCore import Qt, QTimer
 import pyqtgraph as pg
 
-from sensor_worker import SensorWorker, OfflineReplayWorker
+from sensor_worker import SensorWorker, OfflineReplayWorker, WebSocketWorker
 
 from plyer import notification
 import simulator
@@ -484,10 +484,12 @@ class Dashboard(QMainWindow):
             self.worker.wait() # Critical: ensures the thread is fully dead before starting a new one
             
         if self.btn_toggle.isChecked():
-            self.worker = SensorWorker()   # TCP sensor Socket Worker initiation if connect system clicked 
+            
+            # self.worker = SensorWorker()  # TCP sensor Socket Worker initiation if connect system clicked
+            
+            self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
             self.global_status_update(True)
             
-            # self.worker = WebsocketSensorWorker()
             
         
             
@@ -518,7 +520,7 @@ class Dashboard(QMainWindow):
         curr_time = time.time() - self.start_time
 
         # We save the whole list once per update, not once per sensor.
-        if hasattr(self, 'worker') and isinstance(self.worker, SensorWorker):
+        if hasattr(self, 'worker') and isinstance(self.worker, WebSocketWorker):
             archive_entry = {
                 "timestamp_unix": time.time(),
                 "sensors": sensor_list
@@ -636,7 +638,8 @@ class Dashboard(QMainWindow):
             token, ok = QInputDialog.getText(self, "Identity Verification", "Enter Admin Token:", echo=QLineEdit.EchoMode.Password)
             if ok and token == "admin123":
 
-                QMessageBox.information(self, "Access Granted", "Welcome, Administrator. Maintenance Console Unlocked for 10 minutes.")
+                QMessageBox.information(self, "Access Granted", "Maintenance mode activated")
+                
                 self.maintenance_unlocked = True
                 self.session_timer.start(self.timeout_seconds * 1000)
                 self.tabs.setCurrentIndex(1)
