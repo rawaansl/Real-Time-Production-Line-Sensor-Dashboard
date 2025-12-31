@@ -1427,29 +1427,53 @@ def check_tab_access(self, index):
 
 ---
 
-#### 11. Testing Strategy
 
-##### 11.1 Unit Testing
+#### 11. Test Architecture Overview
 
-###### 11.1.1 Simulator Tests
+The test suite is organized into **five main categories**:
+
+1. **Configuration Tests**: Verify config file loading and parsing
+2. **Data Generation Tests**: Validate simulator output
+3. **Parsing Tests**: Ensure correct JSON handling
+4. **API Compliance Tests**: Check protocol adherence
+5. **Sensor Worker Behavior Tests**
+
+#### 11.1 `Simulator_test.py`
+
+###### 11.1.1 Configuration Loading Tests
 
 ```python
 
 class TestSimulator(unittest.TestCase):
     
-    
     def setUp(self):
         self.config = load_config()
         self.sensors = self.config['sensors']
-    
-    
     # --- 1. CONFIGURATION TESTS ---
-    def test_config_loading(self):
-        """Verify configuration file is valid"""
-        self.assertIn('sensors', self.config)
-        self.assertIn('connection', self.config)
-        self.assertEqual(len(self.sensors), 6)
+     
+    @patch("builtins.open", new_callable=mock_open, read_data='{"test": "data"}')
+    def test_load_config_success(self, mock_file):
+        result = load_config()
+        self.assertEqual(result, {"test": "data"})
+        mock_file.assert_called_with('config/sensors_config.json', 'r')
         
+        
+    @patch("builtins.open", side_effect=FileNotFoundError)
+    def test_load_config_file_not_found(self, mock_file):
+        with self.assertRaises(SystemExit) as cm:
+            load_config()
+        self.assertEqual(cm.exception.code, 1)
+        mock_file.assert_called_with('config/sensors_config.json', 'r')
+        
+```
+
+**Why `mock_open()`?**
+- **Isolation**: Test doesn't depend on actual file system
+- **Speed**: No disk I/O operations
+- **Reliability**: Works regardless of file existence
+
+###### 11.1.2 Data Generation Tests
+```python
     # --- 2. PAYLOAD GENERATION TESTS ---
     def test_payload_structure(self):
         """Verify generated payload format"""
@@ -1463,7 +1487,16 @@ class TestSimulator(unittest.TestCase):
             self.assertIn('value', sensor_data)
             self.assertIn('timestamp', sensor_data)
             self.assertIn('status', sensor_data)
-    
+```
+**Why This Matters**:
+- **Contract Testing**: Dashboard expects specific JSON structure
+- **API Stability**: Prevents breaking changes
+- **Type Safety**: Ensures data types are consistent
+
+###### 11.1.3 Alarm Logic Test
+
+```python
+
     # --- 3. ALARM LOGIC TESTS ---
     def test_alarm_logic(self):
         """Verify alarm status determination"""
@@ -1500,6 +1533,11 @@ class TestSimulator(unittest.TestCase):
                 self.assertGreaterEqual(sensor_data['value'], min_val - 0.01)
                 self.assertLessEqual(sensor_data['value'], max_val + 0.01)
     
+```
+###### 11.1.4 JSON Parsing Test
+
+```python
+
     # --- 1. SENSOR PARSING ---
     def test_sensor_parsing(self):
         
@@ -1511,7 +1549,13 @@ class TestSimulator(unittest.TestCase):
         self.assertEqual(len(parsed_data), 1)
         self.assertEqual(parsed_data[0]['name'], "Temp")
         self.assertIsInstance(parsed_data[0]['value'], float)
+```
 
+**Purpose**: Verify JSON string correctly deserializes to Python objects.
+
+###### 11.1.5 API Compliance Test
+
+```python
 # --- 5. API OUTPUT TESTS ---
     def test_api_output_compliance(self):
     
@@ -1532,9 +1576,40 @@ class TestSimulator(unittest.TestCase):
 ```
 
 
-###### 11.1.1 Sensor Worker Tests
+**Purpose**: Verify simulator output matches TCP protocol specification.
+
+**How It Works**:
+
+**Part 1: Newline Termination**
+```python
+self.assertTrue(api_string.endswith("\n"), "...")
+```
+- **Why**: TCP streams have no built-in message boundaries
+- **Solution**: Use newline (`\n`) as frame delimiter
+- **Verification**: Checks string ends with newline
+
+**Part 2: Sensor Count Validation**
+```python
+decoded_payload = json.loads(api_string.strip())
+self.assertEqual(len(decoded_payload), 2, "...")
+```
+- **Input**: 2 sensors in config
+- **Expected**: 2 sensor objects in output
+- **Verification**: Count matches
+
+**Part 3: Data Integrity**
+```python
+self.assertEqual(decoded_payload[0]['name'], "Temp")
+```
+- **Verification**: First sensor has correct name
+- **Ensures**: Order preservation and data accuracy
+
+
+
+#### 11.2 `worker_test.py`
 
 ```python
+
 
 class TestSensorWorker(unittest.TestCase):
     
@@ -1595,10 +1670,85 @@ class TestSensorWorker(unittest.TestCase):
         self.assertFalse(worker.isRunning())
 
 ```
+##### 11.3 Test Execution and Coverage
+
+###### 11.3.1 Running the Tests
+
+```bash
+# Run all tests
+python -m unittest simulator_test.py
+
+# Run specific test class
+python -m unittest simulator_test.TestSimulator
+
+# Run single test
+python -m unittest simulator_test.TestSimulator.test_alarm_logic
+
+```
+
+**Expected Output**:
+```
+----------------------------------------------------------------------
+Ran 7 tests in 0.005s
+
+OK
+```
 
 #### 12. Conclusion
 
+##### 12.1 Project Summary
 
+The **Real-Time Production Line Sensor Dashboard** successfully demonstrates the integration of multiple advanced software engineering concepts:
+
+**Key Achievements**:
+1. ✓ **Multithreaded Architecture**: Responsive GUI with concurrent I/O operations
+2. ✓ **Network Communication**: Dual protocol support (TCP/WebSocket)
+3. ✓ **Real-Time Visualization**: High-performance graphing at 2 Hz
+4. ✓ **Robust Error Handling**: Graceful recovery from network failures
+5. ✓ **Industrial Features**: Alarm system, data export, maintenance console
+
+##### 13.2 Technical Highlights
+
+**Threading Excellence**:
+- Zero race conditions through signal-slot architecture
+- Proper resource cleanup and graceful shutdown
+- Thread-safe communication without explicit locks
+
+**Protocol Design**:
+- Newline-delimited JSON for streaming
+- Support for protocol switching without code changes
+
+**User Experience**:
+- Immediate visual feedback for all operations
+- Desktop notifications for critical events
+- Persistent configuration and session management
+
+##### 12.3 Learning Outcomes
+
+This project provides hands-on experience with:
+
+1. **PyQt6 Framework**: Modern GUI development patterns
+2. **Asynchronous Programming**: Event loops and non-blocking I/O
+3. **Network Protocols**: TCP sockets and WebSocket implementation
+4. **Data Visualization**: Real-time plotting with PyQtGraph
+5. **Software Testing**: Unit testing with mocks and patches
+6. **Design Patterns**: MVC, Observer and Strategy
+uency queries
+
+##### 12.4 Acknowledgments
+
+**Technologies Used**:
+- **Qt Framework**: Cross-platform GUI toolkit
+- **PyQtGraph**: Scientific graphics library
+- **Python asyncio**: Asynchronous I/O
+- **unittest**: Testing framework
+
+**Development Tools**:
+- **VS Code**: Primary IDE
+- **Git**: Version control
+- **pip**: Package management
+
+---
 
 
 
