@@ -904,10 +904,7 @@ socket.onmessage = (event) => console.log('Data:', event.data);
 socket.onerror = (error) => console.error('Error:', error);
 ```
 **Expected:** JSON objects scrolling in the console
-![](imgs/online_simulator.png)
-
-
-
+![](../imgs/online_simulator.png)
 
 
 ##### 7.3 Protocol Specification
