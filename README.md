@@ -1,8 +1,8 @@
-# Real-Time Production Line Sensor Dashboard
+#### Real-Time Production Line Sensor Dashboard
 
 A desktop-based real-time monitoring dashboard built with PyQt6 that visualizes industrial sensor data streamed over TCP. The system supports live monitoring, alarm detection, offline replay, and session export with a modern, production-grade UI.
 
-## Project Structure
+##### Project Structure
 
 ```
 Real-Time-Production-Line-Sensor-Dashboard/
@@ -19,15 +19,20 @@ Real-Time-Production-Line-Sensor-Dashboard/
 └── venv/                  # (Optional) Virtual environment
 ```
 
-## Setup Steps
-
-### 1. Prerequisites
+###### Prerequisites
 
 - Python 3.9+
 - Windows / Linux / macOS
-- Internet connection not required (local TCP simulation)
+- Internet connection not required in case of local TCP simulation
 
-### 2. Create & Activate Virtual Environment (Recommended)
+##### Setup Steps
+
+##### 1. Clone Repository
+```bash
+git clone https://github.com/yourusername/sensor-dashboard.git
+cd sensor-dashboard
+```
+##### 2. Create & Activate Virtual Environment (Recommended)
 
 ```bash
 python -m venv venv
@@ -55,9 +60,9 @@ pip install -r requirements.txt
 - plyer
 - websockets (optional – WebSocket simulator)
 
-## Running Instructions
+##### Running Instructions
 
-### Step 1: Start the Sensor Simulator
+###### Step 1: Start the Sensor Simulator
 
 The simulator acts as an industrial data source and must be running before the dashboard connects.
 
@@ -69,8 +74,13 @@ python simulator.py
 ```
 Industrial TCP Simulator Online at 127.0.0.1:5555...
 ```
+for websocket online streaming:
+**Expected output:**
+```
+Industrial WebSocket Simulator Online at ws://localhost:8080...
+```
 
-### Step 2: Launch the Dashboard Application
+###### Step 2: Launch the Dashboard Application
 
 Open a new terminal and run:
 
@@ -83,14 +93,14 @@ python app.py
 - Monitoring Dashboard
 - Sensors in DISCONNECTED state
 
-### Step 3: Connect to Live Data
+###### Step 3: Connect to Live Data
 
 1. Click **Connect System**
 2. Status changes to **SYSTEM CONNECTED**
 3. Sensors update in real time
 4. Graphs display rolling 20-second windows
 
-### Step 4: Maintenance Console Access
+###### Step 4: Maintenance Console Access
 
 1. Open the **Maintenance Console** tab
 2. Enter the admin token: `admin123`
@@ -102,16 +112,16 @@ python app.py
 - Load offline logs
 - Enable desktop notifications
 
-##  Communication Protocol Description
+####  Communication Protocol Description
 
-### Transport Layer
+###### Transport Layer
 
 - **Protocol:** TCP Socket
 - **Host:** 127.0.0.1
 - **Port:** 5555
 - **Update Rate:** Configurable (default: 0.5s)
 
-### Data Format (TCP Payload)
+###### Data Format (TCP Payload)
 
 Each TCP message is:
 - JSON-encoded
@@ -136,7 +146,7 @@ Each TCP message is:
 ]
 ```
 
-### Sensor Object Fields
+###### Sensor Object Fields
 
 | Field     | Type   | Description               |
 |-----------|--------|---------------------------|
@@ -145,7 +155,7 @@ Each TCP message is:
 | timestamp | string | Time in HH:MM:SS          |
 | status    | string | OK, LOW ALARM, HIGH ALARM |
 
-### Alarm Logic
+###### Alarm Logic
 
 - `value < low` → **LOW ALARM**
 - `value > high` → **HIGH ALARM**
@@ -155,7 +165,7 @@ Each TCP message is:
 - Alarm log entry
 - Optional desktop notification
 
-## Sensor Configuration (sensors_config.json)
+##### Sensor Configuration (sensors_config.json)
 
  - The configuration schema is scalable where the user is able to add/edit any data entry and the UI will update accordingly
 
@@ -180,21 +190,21 @@ Each TCP message is:
 
 ```
 
-## Offline Replay & Export
+#### Offline Replay & Export
 
-### Export Current Session
+##### Export Current Session
 
 - Saves all received packets to JSON
 - Timestamped archive
 - Accessible from Maintenance Console
 
-### Offline Replay
+##### Offline Replay
 
 - Load exported JSON
 - Replay data using the same UI pipeline
 - System switches to **REPLAY MODE**
 
-## Optional WebSocket Support
+#### Optional WebSocket Support
 
 The simulator includes a WebSocket server:
 ```
@@ -202,24 +212,44 @@ ws://localhost:8080
 ```
 
 **To enable it:**
-1. Uncomment WebSocket section in `simulator.py`
-2. Implement WebSocket worker in `sensor_worker.py`
+1. Uncomment WebSocket section in `simulator.py` entry point.
+```python
+if __name__ == "__main__":
+    # You can choose which one to run by uncommenting:
+    
+    # OPTION A: Run TCP (Default for the current dashboard)
+    try:
+        run_tcp_simulator()
+    except KeyboardInterrupt:
+        print("\nTCP Simulator shut down.")
 
-## Key Features Summary
+    # OPTION B: Run WebSocket (NOTE ---> update your dashboard worker WebSocketWorker accordingly)
+    # try:
+    #     asyncio.run(run_websocket_simulator())
+    # except KeyboardInterrupt:
+    #     print("\nWS Simulator shut down.")
+```
+2. Uncomment websocketworker instance in `app.py` `handle_connection()` method.
+```python
+self.worker = SensorWorker()       # TCP sensor Socket Worker initiation if connect system clicked
+# self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
+```
 
-- ✓ Real-time sensor monitoring
-- ✓ Industrial TCP simulation
-- ✓ Alarm detection & logging
-- ✓ Sliding-window analytics
-- ✓ Offline replay
-- ✓ Session export
-- ✓ Admin-protected maintenance console
+#### Key Features Summary
 
-# API Documentation 
+- Real-time sensor monitoring
+- Industrial TCP simulation
+- Alarm detection & logging
+- Sliding-window analytics
+- Offline replay
+- Session export
+- Admin-protected maintenance console
 
-## Class Overview
+#### API Documentation 
 
-### `Dashboard(QMainWindow)`
+##### Class Overview
+
+##### `Dashboard(QMainWindow)`
 
 The main application class that provides a real-time monitoring interface for industrial sensor data.
 
@@ -229,9 +259,9 @@ The main application class that provides a real-time monitoring interface for in
 
 ---
 
-## Dashboard Class
+##### Dashboard Class
 
-### Constructor
+###### Constructor
 
 ```python
 def __init__(self)
@@ -262,11 +292,11 @@ def __init__(self)
 
 ---
 
-## Public Methods
+#### Public Methods
 
-### UI Initialization
+##### UI Initialization
 
-#### `init_ui()`
+##### `init_ui()`
 ```python
 def init_ui(self) -> None
 ```
@@ -280,7 +310,7 @@ def init_ui(self) -> None
 
 ---
 
-#### `setup_monitoring_ui()`
+##### `setup_monitoring_ui()`
 ```python
 def setup_monitoring_ui(self) -> None
 ```
@@ -308,7 +338,7 @@ def setup_monitoring_ui(self) -> None
 
 ---
 
-#### `setup_maintenance_ui()`
+##### `setup_maintenance_ui()`
 ```python
 def setup_maintenance_ui(self) -> None
 ```
@@ -334,9 +364,9 @@ def setup_maintenance_ui(self) -> None
 
 ---
 
-### Connection Management
+##### Connection Management
 
-#### `handle_connection()`
+##### `handle_connection()`
 ```python
 def handle_connection(self) -> None
 ```
@@ -359,9 +389,9 @@ def handle_connection(self) -> None
 
 ---
 
-### Data Processing
+#### Data Processing
 
-#### `update_dashboard(sensor_list)`
+##### `update_dashboard(sensor_list)`
 ```python
 def update_dashboard(self, sensor_list: List[Dict]) -> None
 ```
@@ -395,7 +425,7 @@ else:
 
 ---
 
-#### `add_to_alarm_history(ts, name, val, status)`
+##### `add_to_alarm_history(ts, name, val, status)`
 ```python
 def add_to_alarm_history(self, ts: str, name: str, val: float, status: str) -> None
 ```
@@ -414,9 +444,9 @@ def add_to_alarm_history(self, ts: str, name: str, val: float, status: str) -> N
 
 ---
 
-### Maintenance Operations
+#### Maintenance Operations
 
-#### `clear_system_alarms()`
+##### `clear_system_alarms()`
 ```python
 def clear_system_alarms(self) -> None
 ```
@@ -429,7 +459,7 @@ def clear_system_alarms(self) -> None
 
 ---
 
-#### `restart_simulation()`
+##### `restart_simulation()`
 ```python
 def restart_simulation(self) -> None
 ```
@@ -452,7 +482,7 @@ def restart_simulation(self) -> None
 
 ---
 
-#### `load_offline_data()`
+##### `load_offline_data()`
 ```python
 def load_offline_data(self) -> None
 ```
@@ -473,7 +503,7 @@ def load_offline_data(self) -> None
 
 ---
 
-#### `export_session_to_json()`
+##### `export_session_to_json()`
 ```python
 def export_session_to_json(self) -> None
 ```
@@ -503,9 +533,9 @@ def export_session_to_json(self) -> None
 
 ---
 
-### Notification System
+#### Notification System
 
-#### `trigger_desktop_alert(name, val, status)`
+##### `trigger_desktop_alert(name, val, status)`
 ```python
 def trigger_desktop_alert(self, name: str, val: float, status: str) -> None
 ```
@@ -532,9 +562,9 @@ def trigger_desktop_alert(self, name: str, val: float, status: str) -> None
 
 ---
 
-### Authentication & Security
+#### Authentication & Security
 
-#### `check_tab_access(index)`
+##### `check_tab_access(index)`
 ```python
 def check_tab_access(self, index: int) -> None
 ```
@@ -560,7 +590,7 @@ def check_tab_access(self, index: int) -> None
 
 ---
 
-#### `lock_maintenance_session()`
+##### `lock_maintenance_session()`
 ```python
 def lock_maintenance_session(self) -> None
 ```
@@ -575,7 +605,7 @@ def lock_maintenance_session(self) -> None
 
 ---
 
-#### `eventFilter(obj, event)`
+##### `eventFilter(obj, event)`
 ```python
 def eventFilter(self, obj: QObject, event: QEvent) -> bool
 ```
@@ -593,9 +623,9 @@ def eventFilter(self, obj: QObject, event: QEvent) -> bool
 
 ---
 
-### Status Management
+#### Status Management
 
-#### `global_status_update(operational)`
+##### `global_status_update(operational)`
 ```python
 def global_status_update(self, operational: bool) -> None
 ```
@@ -616,7 +646,7 @@ def global_status_update(self, operational: bool) -> None
 
 ---
 
-#### `update_log(msg)`
+##### `update_log(msg)`
 ```python
 def update_log(self, msg: str) -> None
 ```
@@ -633,9 +663,9 @@ def update_log(self, msg: str) -> None
 
 ---
 
-## Signal/Slot Connections
+#### Signal/Slot Connections
 
-### Worker Thread Signals
+##### Worker Thread Signals
 
 ```python
 # SensorWorker signals
@@ -647,7 +677,7 @@ worker.data_received.connect(self.update_dashboard)
 worker.log_message.connect(self.update_log)
 ```
 
-### UI Component Signals
+##### UI Component Signals
 
 ```python
 # Connection button
@@ -671,9 +701,9 @@ session_timer.timeout.connect(self.lock_maintenance_session)
 
 ---
 
-## Data Structures
+#### Data Structures
 
-### Sensor Data Packet
+##### Sensor Data Packet
 ```python
 {
     "name": str,        # Sensor identifier
@@ -683,7 +713,7 @@ session_timer.timeout.connect(self.lock_maintenance_session)
 }
 ```
 
-### Session Archive Entry
+##### Session Archive Entry
 ```python
 {
     "timestamp_unix": float,           # Unix timestamp
@@ -691,7 +721,7 @@ session_timer.timeout.connect(self.lock_maintenance_session)
 }
 ```
 
-### Sensor Configuration
+##### Sensor Configuration
 ```python
 {
     "connection": {
@@ -710,22 +740,7 @@ session_timer.timeout.connect(self.lock_maintenance_session)
 }
 ```
 
-
-## Usage Example
-
-```python
-# Initialize application
-app = QApplication(sys.argv)
-
-# Create main window
-window = Dashboard()
-window.show()
-
-# Enter event loop
-sys.exit(app.exec())
-```
-
-### Typical Workflow
+##### Typical Workflow
 
 1. **Startup**: Splash screen displays for 2.5s
 2. **Monitor Tab**: Dashboard loads in disconnected state
@@ -738,19 +753,19 @@ sys.exit(app.exec())
 
 ---
 
-## Dependencies
+#### Dependencies
 
 | Package | Version | Purpose |
 |---------|---------|---------|
 | PyQt6 | Latest | GUI framework |
 | pyqtgraph | Latest | Real-time plotting |
 | plyer | Latest | Desktop notifications |
-| simulator | Local | Sensor data generator |
 | sensor_worker | Local | Threading for TCP/replay |
+| websockets | Latest | websocket streaming|
 
 ---
 
-## Thread Safety Notes
+#### Thread Safety Notes
 
 - **Main Thread**: Handles all GUI updates
 - **Worker Thread**: Manages TCP socket or file replay
