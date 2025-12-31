@@ -520,7 +520,7 @@ class Dashboard(QMainWindow):
         curr_time = time.time() - self.start_time
 
         # We save the whole list once per update, not once per sensor.
-        if hasattr(self, 'worker') and isinstance(self.worker, WebSocketWorker):
+        if hasattr(self, 'worker') and isinstance(self.worker, SensorWorker):
             archive_entry = {
                 "timestamp_unix": time.time(),
                 "sensors": sensor_list
