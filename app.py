@@ -485,9 +485,9 @@ class Dashboard(QMainWindow):
             
         if self.btn_toggle.isChecked():
             
-            # self.worker = SensorWorker()  # TCP sensor Socket Worker initiation if connect system clicked
+            self.worker = SensorWorker()  # TCP sensor Socket Worker initiation if connect system clicked
             
-            self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
+            # self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
             self.global_status_update(True)
             
             
