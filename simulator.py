@@ -125,13 +125,13 @@ if __name__ == "__main__":
     # You can choose which one to run by uncommenting:
     
     # OPTION A: Run TCP (Default for the current dashboard)
-    try:
-        run_tcp_simulator()
-    except KeyboardInterrupt:
-        print("\nTCP Simulator shut down.")
+    # try:
+    #     run_tcp_simulator()
+    # except KeyboardInterrupt:
+    #     print("\nTCP Simulator shut down.")
 
     # OPTION B: Run WebSocket (NOTE ---> update your dashboard worker WebSocketWorker accordingly)
-    # try:
-    #     asyncio.run(run_websocket_simulator())
-    # except KeyboardInterrupt:
-    #     print("\nWS Simulator shut down.")
+    try:
+        asyncio.run(run_websocket_simulator())
+    except KeyboardInterrupt:
+        print("\nWS Simulator shut down.")

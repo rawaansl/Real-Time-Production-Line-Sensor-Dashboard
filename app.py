@@ -483,15 +483,14 @@ class Dashboard(QMainWindow):
             self.worker.stop()
             self.worker.wait() # Critical: ensures the thread is fully dead before starting a new one
             
+            
         if self.btn_toggle.isChecked():
             
-            self.worker = SensorWorker()  # TCP sensor Socket Worker initiation if connect system clicked
+            # self.worker = SensorWorker()  # TCP sensor Socket Worker initiation if connect system clicked
             
-            # self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
+            self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
             self.global_status_update(True)
             
-            
-        
             
             # data_received is a pyqtsignal, a messenger from worker thread to main thread carrying sensor data
             # connect is the action of linking the signal to a slot (function) in main thread "link the signal to a specific action"
@@ -505,8 +504,14 @@ class Dashboard(QMainWindow):
             # the OS here is commanded to allocate resources and schedule a new execution thread for the worker besides the main GUI thread
             
             self.btn_toggle.setText("Disconnect System")
-            self.status_led.setText("●  SYSTEM CONNECTED")
-            self.status_led.setStyleSheet("color: #32D74B;") 
+            
+            if isinstance(self.worker, WebSocketWorker):
+                self.status_led.setText("●  WEBSOCKET MODE")
+                self.status_led.setStyleSheet("color: #0A84FF;")
+
+            else:
+                self.status_led.setText("●  SYSTEM CONNECTED")
+                self.status_led.setStyleSheet("color: #32D74B;") 
             
             
         else:
@@ -520,12 +525,15 @@ class Dashboard(QMainWindow):
         curr_time = time.time() - self.start_time
 
         # We save the whole list once per update, not once per sensor.
-        if hasattr(self, 'worker') and isinstance(self.worker, SensorWorker):
+        if hasattr(self, 'worker') and self.worker.isRunning():
             archive_entry = {
                 "timestamp_unix": time.time(),
                 "sensors": sensor_list
             }
             self.session_archive.append(archive_entry)
+            
+
+
       
         # 2. UI UPDATES: Loop through each sensor to update tables/graphs
         for sensor in sensor_list:
@@ -679,8 +687,10 @@ class Dashboard(QMainWindow):
         # change system connectivity button to replay mode
         self.btn_toggle.setChecked(False)
         self.btn_toggle.setText("Connect System")
-        self.status_led.setText("●  SYSTEM REPLAY MODE")
-        self.status_led.setStyleSheet("color: #0A84FF;")
+        self.status_led.setText("●  OFFLINE REPLAY MODE")
+        self.status_led.setStyleSheet("color: #FFD60A;")
+        
+
         
         # clear the plots
         for name in self.curves:
@@ -693,9 +703,6 @@ class Dashboard(QMainWindow):
         if file_path:
             self.update_log(f"USER: Opening offline archive {file_path}")
             
-            # Switch the "Status LED" to a different color (Blue) for Replay Mode
-            self.global_status_circle.setStyleSheet("background-color: #0A84FF; border: none; border-radius: 12px;")
-            self.global_status_text.setText("REPLAY MODE")
             
             # Initialize the Offline Worker
             self.worker = OfflineReplayWorker(file_path)   # overwrite the existing live sensor worker
