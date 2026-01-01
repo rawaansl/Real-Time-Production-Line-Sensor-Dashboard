@@ -567,12 +567,12 @@ class Dashboard(QMainWindow):
         curr_time = time.time() - self.start_time
 
         # 1. ARCHIVE DATA: Store incoming data for session export
-        if hasattr(self, 'worker') and self.worker.isRunning():
-            archive_entry = {
-                "timestamp_unix": time.time(),
-                "sensors": sensor_list
-            }
-            self.session_archive.append(archive_entry)
+        
+        archive_entry = {
+            "timestamp_unix": time.time(),
+            "sensors": sensor_list
+        }
+        self.session_archive.append(archive_entry)
             
       
         # 2. UI UPDATES: Loop through each sensor to update tables/graphs
@@ -627,6 +627,7 @@ class Dashboard(QMainWindow):
                 
                 self.curves[name].setData(self.plot_times[name], self.plot_data[name])
                 self.plot_widgets[name].setXRange(curr_time - 20, curr_time, padding=0)
+                
 
 
 
