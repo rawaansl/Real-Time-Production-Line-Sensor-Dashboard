@@ -8,6 +8,7 @@ import sys
 
 
 
+# --- 1. CONFIG LOADER ---
 def load_config():
     """Load configuration from external JSON file."""
     try:
@@ -17,6 +18,7 @@ def load_config():
         print("Error: sensors_config.json not found. Please create it first.")
         sys.exit(1)
 
+# --- 2. PAYLOAD GENERATOR ---
 def generate_payload(sensor_settings):
     
     """Helper to generate sensor data based on config ranges."""
@@ -42,18 +44,22 @@ def generate_payload(sensor_settings):
     return payload
 
 
+# --- 3. SIMULATOR SERVERS ---
+# Server code for simulating sensor data streams
 
+# TCP Simulator
 def run_tcp_simulator():
     
-    config = load_config()
+    config = load_config() # Load config
     host = config['connection']['host']
     port = config['connection']['tcp_port']
     interval = config['connection']['update_interval'] 
     SENSOR_CONFIG = config['sensors']
-            
+    
+    # Create TCP server socket
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    
+    # Bind and listen
     server_socket.bind((host, port))
     server_socket.listen(1)
     
@@ -74,8 +80,8 @@ def run_tcp_simulator():
                 conn.sendall(json_data.encode('utf-8'))
                 
                 time.sleep(interval) # required frequency
-                
-                
+        
+        # Handle disconnections
         except (ConnectionResetError, BrokenPipeError):
             print("Dashboard disconnected. Waiting...")
         except Exception as e:
@@ -85,6 +91,8 @@ def run_tcp_simulator():
                 conn.close()
 
 
+
+# WebSocket Simulator
 def run_websocket_simulator():
     
     config = load_config()
@@ -113,13 +121,14 @@ def run_websocket_simulator():
             print("Industrial WebSocket Simulator Online at ws://localhost:8080...")
             await asyncio.Future()  # Run forever
             
-            
-
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         print("\nSimulator shut down by user.")
 
+
+# entry point for simulator 
+# allows choosing between TCP and WebSocket modes
 
 if __name__ == "__main__":
     # You can choose which one to run by uncommenting:
@@ -130,7 +139,9 @@ if __name__ == "__main__":
     # except KeyboardInterrupt:
     #     print("\nTCP Simulator shut down.")
 
-    # OPTION B: Run WebSocket (NOTE ---> update your dashboard worker WebSocketWorker accordingly)
+    # OPTION B: Run WebSocket (NOTE ---> update your dashboard worker to instantiate WebSocketWorker accordingly to test this)
+    # details in README.md and documentation
+    
     try:
         asyncio.run(run_websocket_simulator())
     except KeyboardInterrupt:
