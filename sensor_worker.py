@@ -134,17 +134,29 @@ class OfflineReplayWorker(QThread):
         super().__init__()
         self.file_path = file_path
         self._run_flag = True
-
+        self._is_paused = False
+        
+    # pause or resume the replay
+    def toggle_pause(self):
+        self._is_paused = not self._is_paused
+        return self._is_paused
+    
+    
     def run(self):
         try:
             with open(self.file_path, 'r') as f:
                 saved_data = json.load(f)
             
-            
             self.log_message.emit(f"OFFLINE: Loaded {len(saved_data)} data points.")
             
             for entry in saved_data:
                 if not self._run_flag: 
+                    break
+                
+                while self._is_paused and self._run_flag:
+                    time.sleep(0.1)  # wait while paused
+                
+                if not self._run_flag:
                     break
                 
                 # Emit the sensor data list

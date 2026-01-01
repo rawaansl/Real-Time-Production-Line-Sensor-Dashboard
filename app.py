@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QTableWidget, QTableWidgetItem, 
                              QHeaderView, QGroupBox, QTextEdit, QLabel, 
                              QGridLayout, QPushButton, QTabWidget, QInputDialog, 
-                             QMessageBox, QLineEdit, QCheckBox, QSplashScreen, QFileDialog)
+                             QMessageBox, QLineEdit, QFrame, QCheckBox, QSplashScreen, QFileDialog, QGraphicsOpacityEffect)
 
 
 
@@ -221,7 +221,11 @@ class Dashboard(QMainWindow):
         self.btn_toggle.clicked.connect(self.handle_connection)
         
         
-        conn_bar.addWidget(self.status_led); conn_bar.addStretch(); conn_bar.addWidget(self.btn_toggle)
+        self.pause_btn = QPushButton("Pause Replay")
+        self.pause_btn.clicked.connect(self.pause_offline_replay)
+        self.pause_btn.setEnabled(False) # Only enable during Replay
+
+        conn_bar.addWidget(self.status_led); conn_bar.addStretch(); conn_bar.addWidget(self.btn_toggle); conn_bar.addWidget(self.pause_btn)
         layout.addLayout(conn_bar)
         upper_layout = QHBoxLayout()
         
@@ -430,6 +434,8 @@ class Dashboard(QMainWindow):
 
     # restart the simulation worker and reset data buffers
     def restart_simulation(self):
+        
+        
                 
         self.update_log("SYSTEM: Initializing Simulator Restart...")
 
@@ -504,8 +510,8 @@ class Dashboard(QMainWindow):
             
         if self.btn_toggle.isChecked():
             
-            # self.worker = SensorWorker()  # TCP sensor Socket Worker initiation if connect system clicked
-            self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
+            self.worker = SensorWorker()  # TCP sensor Socket Worker initiation if connect system clicked
+            # self.worker = WebSocketWorker()  # WebSocket Worker initiation if connect system clicked
             self.global_status_update(True)
             
             
@@ -525,6 +531,11 @@ class Dashboard(QMainWindow):
             
             self.btn_toggle.setText("Disconnect System")
             
+            # Reset pause button for live mode
+            self.pause_btn.setText("Pause Replay")
+            self.pause_btn.setEnabled(False)
+            self.pause_btn.setStyleSheet("")
+            self.centralWidget().setGraphicsEffect(None)
             
             if isinstance(self.worker, WebSocketWorker):
                 self.status_led.setText("●  WEBSOCKET LIVE STREAM MODE")
@@ -541,6 +552,12 @@ class Dashboard(QMainWindow):
             self.status_led.setText("●  SYSTEM DISCONNECTED")
             self.status_led.setStyleSheet("color: #FF453A;")
             self.global_status_update(False)
+            
+            # Reset pause button when disconnected
+            self.pause_btn.setText("Pause Replay")
+            self.pause_btn.setEnabled(False)
+            self.pause_btn.setStyleSheet("")
+            self.centralWidget().setGraphicsEffect(None)
 
 
 
@@ -706,41 +723,98 @@ class Dashboard(QMainWindow):
     # Load offline data from a file and replay it
     def load_offline_data(self):
         
-        # 1. STOP THE LIVE WORKER FIRST
-        if hasattr(self, 'worker') and self.worker.isRunning():
-            self.update_log("SYSTEM: Suspending Live Worker for Offline Replay...")
-            self.worker.stop()
-            self.worker.wait() # Wait for the thread to actually close
-
-
-        # 2. Reset the UI for a fresh start
-        self.restart_simulation()
-                
-        # change system connectivity button to replay mode
-        self.btn_toggle.setChecked(False)
-        self.btn_toggle.setText("Connect System")
-        self.status_led.setText("●  OFFLINE REPLAY MODE")
-        self.status_led.setStyleSheet("color: #FFD60A;")
-        
-        # 3. Open File Dialog to select offline log
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Open Sensor Log", "", "JSON Files (*.json);;CSV Files (*.csv)"
         )
         
-        if file_path:
-            self.update_log(f"USER: Opening offline archive {file_path}")
+        if not file_path:
+            self.update_log("USER ACTION: Offline log loading cancelled.")
+            return
+        
+        self.pause_btn.setEnabled(True)  # Enable pause button for replay mode
+        self.pause_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #007AFF;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 5px 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056CC;
+            }
+        """)
+        self.update_log(f"USER: Opening offline archive {file_path}")
+        
+         # 1. STOP THE LIVE WORKER FIRST
+        if hasattr(self, 'worker') and self.worker.isRunning():
+            self.update_log("SYSTEM: Suspended Live Worker for Offline Replay...")
+            self.worker.stop()
+            self.worker.wait() # Wait for the thread to actually close
             
+                
+        # 2. Reset the UI for a fresh start
+        self.clear_system_alarms()
+                
+        # 3. clear live sensor table
+        for row in range(self.table.rowCount()):
+            for col in range(self.table.columnCount()):
+                self.table.setItem(row, col, QTableWidgetItem(""))
+                self.table.item(row, col).setBackground(QColor(255, 255, 255, 0)) # Reset background color
+                
+        
+        # change system connectivity button to replay mode
+        self.btn_toggle.setChecked(False)
+        self.btn_toggle.setText("Connect System")
+        self.status_led.setText("●  SYSTEM REPLAY MODE")
+        self.status_led.setStyleSheet("color: #0A84FF;")
+        
+        # clear the plots
+        for name in self.curves:
+            self.curves[name].setData([], [])
             
-            # Initialize the Offline Worker
-            self.worker = OfflineReplayWorker(file_path)   # will overwrite the existing sensor worker (tcp or websocket)
-            self.worker.data_received.connect(self.update_dashboard)
-            self.worker.log_message.connect(self.update_log)
-            self.worker.start() 
+        
+
             
+        # Switch the "Status LED" to a different color (Blue) for Replay Mode
+        self.global_status_circle.setStyleSheet("background-color: #0A84FF; border: none; border-radius: 12px;")
+        self.global_status_text.setText("REPLAY MODE")
             
-    
+        # Initialize the Offline Worker
+        self.worker = OfflineReplayWorker(file_path)   # overwrite the existing live sensor worker
+        self.worker.data_received.connect(self.update_dashboard)
+        self.worker.log_message.connect(self.update_log)
+        self.worker.start() 
+
+
+    def pause_offline_replay(self):
+        if not hasattr(self, 'worker') or not isinstance(self.worker, OfflineReplayWorker):
+            return
+        
+        paused = self.worker.toggle_pause()
+
+        # Update UI Theme (Yellow for Pause!)
+        if paused:
+            self.pause_btn.setText("Resume")
+            self.pause_btn.setStyleSheet("background-color: #FFCC00; color: black;")
+            self.update_log("SYSTEM: Replay Paused.")
+            # Dim the charts to show they are inactive
+            effect = QGraphicsOpacityEffect()
+            effect.setOpacity(0.6)
+            self.centralWidget().setGraphicsEffect(effect)
+        else:
+            self.pause_btn.setText("Pause")
+            self.pause_btn.setStyleSheet("") # Reset to default
+            self.update_log("SYSTEM: Replay Resumed.")
+            self.centralWidget().setGraphicsEffect(None)
+                
+
     # Export the current session data to a JSON file
     def export_session_to_json(self):
+        
+        if isinstance(self.worker, OfflineReplayWorker):
+            QMessageBox.warning(self, "Export Failed", "Cannot export data during Offline Replay mode.")
+            return
 
         if not self.session_archive:
             QMessageBox.warning(self, "Export Failed", "No data has been collected in this session yet.")
