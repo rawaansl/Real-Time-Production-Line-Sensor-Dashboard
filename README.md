@@ -30,7 +30,6 @@ Real-Time-Production-Line-Sensor-Dashboard/
 ##### 1. Clone Repository
 ```bash
 git clone https://github.com/yourusername/sensor-dashboard.git
-cd sensor-dashboard
 ```
 ##### 2. Create & Activate Virtual Environment (Recommended)
 
